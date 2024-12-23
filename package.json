@@ -1,0 +1,30 @@
+{
+  "name": "repotopdf",
+  "version": "1.0.0",
+  "description": "Github Repository to PDF File.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon",
+    "dev": "nodemon -r dotenv/config src/index.js"
+  },
+  "keywords": [
+    "github",
+    "pdf",
+    "repo"
+  ],
+  "author": "Rabi anando sarkar",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "marked": "^15.0.4",
+    "mongoose": "^8.9.2",
+    "puppeteer": "^23.11.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

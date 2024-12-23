@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-const generateToken = (error) => {
+const generateToken = (user) => {
     return jwt.sign(
         {
             username: user.username,

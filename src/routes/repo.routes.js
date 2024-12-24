@@ -3,6 +3,6 @@ import { getPdf } from "../controllers/repo.controllers.js";
 
 const router = Router()
 
-router.route('/repoGen').get(getPdf)
+router.route('/repoGen').post(getPdf)
 
 export default router

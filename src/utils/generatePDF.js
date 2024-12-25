@@ -1,17 +1,42 @@
-import puppeteer from "puppeteer";
+import puppeteer from 'puppeteer-core'
 import fs from 'fs'
 import path from 'path'
 import { ApiError } from "./ApiError.js";
 
-const generatePDF = async (html,outputFolder) => {
+const generatePDF = async (htmlContent,outputFolder,executablePath) => {
     try {
-        const browser = await puppeteer.launch();
+
+        if (!executablePath || typeof executablePath !== 'string') {
+            throw new ApiError(400, ':: Invalid executable path provided! ::');
+        }
+
+        const browser = await puppeteer.launch({
+            executablePath,
+            headless: true
+        });
+
         const page = await browser.newPage();
 
+        if(!htmlContent || typeof htmlContent !== "string") {
+            throw new ApiError(
+                400,
+                ":: Invalid HTML provided! ::"
+            )
+        }
+
         // Load HTML Content
-        await page.setContent(html, {
-            waitUntil: 'load'
+        await page.setContent(htmlContent)
+
+        await page.waitForSelector('#content', {
+            timeout: 20000
         })
+
+        if(!outputFolder || typeof outputFolder !== "string") {
+            throw new ApiError(
+                400,
+                ":: Invalid output folder provided! ::"
+            )
+        }
 
         if(!fs.existsSync(outputFolder)) {
             fs.mkdirSync(outputFolder, {
@@ -33,12 +58,12 @@ const generatePDF = async (html,outputFolder) => {
 
         await browser.close()
 
-        return true
+        return pdfPath
 
     } catch (error) {
         throw new ApiError(
             400,
-            `error in puppeteer`
+            `:: Error Generating PDF error => ${error} ::`
         )
     }
 }

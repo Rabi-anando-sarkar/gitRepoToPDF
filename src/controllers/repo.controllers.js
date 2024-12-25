@@ -6,9 +6,11 @@ import { generateHTML } from '../utils/generateHTML.js'
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getFilesFromGithub } from '../utils/getFiles.js'
+import { uploadOnCloudinary } from '../utils/Cloudinary.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 
 const getPdf = asyncHandler(async (req,res) => {
     
@@ -43,16 +45,16 @@ const getPdf = asyncHandler(async (req,res) => {
         )
     }
 
-    const html = generateHTML(fileContents);
+    const htmlContent = generateHTML(fileContents);
 
-    if(!html) {
+    if(!htmlContent) {
         throw new ApiError(
             500,
             "Failed to generate HTML From Files"
         )
     }
 
-    const outputPath = path.join(__dirname,`../../public/temp/${repo}`)
+    const outputPath = path.join(__dirname,`../../public/temp/`)
 
     if(!outputPath) {
         throw new ApiError(
@@ -61,7 +63,7 @@ const getPdf = asyncHandler(async (req,res) => {
         )
     }
     
-    const generatedPDF = await generatePDF(html,outputPath)
+    const generatedPDF = await generatePDF(htmlContent,outputPath,executablePath)
 
     if(!generatedPDF) {
         throw new ApiError(
@@ -73,11 +75,34 @@ const getPdf = asyncHandler(async (req,res) => {
     return res.status(201).json(
         new ApiResponse(
             201,
-            'Working'
+            'Github Repository to Pdf has been generated!'
+        )
+    )
+})
+
+const uploadPdf = asyncHandler( async(req,res) => {
+    
+    const localFolder = path.resolve('public/temp/')
+
+    const response = await uploadOnCloudinary(localFolder)
+
+    if(!response) {
+        throw new ApiError(
+            500,
+            "No response not uploaded"
+        )
+    }
+
+    return res.status(201).json(
+        new ApiResponse(
+            201,
+            response,
+            'File Uploaded to cloudinary succesfully'
         )
     )
 })
 
 export {
-    getPdf
+    getPdf,
+    uploadPdf
 }

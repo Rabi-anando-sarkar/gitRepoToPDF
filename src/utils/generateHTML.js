@@ -7,18 +7,17 @@ const generateHTML = (fileContents) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Repository Content</title>
         <style>
-            /* Universal reset and book-style margins */
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
             }
             body {
-                font-family: 'Georgia', serif; /* Book-style font */
+                font-family: 'Georgia', serif;
                 line-height: 1.6;
-                margin: 40px; /* Universal margin for book-like feel */
+                margin: 40px;
                 padding: 30px;
-                background-color: #f9f9f9; /* Light background */
+                background-color: #f9f9f9;
                 color: #333;
             }
             h1 {
@@ -29,7 +28,7 @@ const generateHTML = (fileContents) => {
             }
             .file {
                 background-color: #ffffff;
-                border: 1px solid #ddd; /* Border to separate content */
+                border: 1px solid #ddd;
                 padding: 20px;
                 border-radius: 8px;
                 margin-bottom: 30px;
@@ -45,12 +44,12 @@ const generateHTML = (fileContents) => {
                 padding: 15px;
                 border-radius: 8px;
                 font-size: 0.9em;
-                white-space: pre-wrap; /* Wrap long lines */
+                white-space: pre-wrap;
                 word-wrap: break-word;
-                max-height: 500px;
-                overflow-y: auto; /* Add scroll for overflow */
+                max-height: unset;
+                overflow-y: visible;
             }
-            /* Ensure everything looks neat with proper page breaks for printing */
+            /* Print settings to prevent cutting off content */
             @media print {
                 body {
                     margin: 0;
@@ -58,17 +57,19 @@ const generateHTML = (fileContents) => {
                 }
                 .file {
                     page-break-inside: avoid;
+                    page-break-before: always;
                 }
             }
         </style>
     </head>
     <body>
-        <h1>Repository Content</h1>
+        <div id="content"> <!-- Added content wrapper -->
+            <h1>Repository Content</h1>
     `;
 
     fileContents.forEach(file => {
         html += `
-            <div class="file">
+            <div class="file" style="page-break-after: always;">
                 <h2>${file.filename}</h2>
                 <pre>${file.content}</pre>
             </div>
@@ -76,8 +77,9 @@ const generateHTML = (fileContents) => {
     });
 
     html += `
-        </body>
-        </html>
+        </div> <!-- End content wrapper -->
+    </body>
+    </html>
     `;
 
     return html;

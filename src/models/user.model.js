@@ -17,6 +17,12 @@ const userSchema = new Schema(
             type: String,
             required: true,
         },
+        repos: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Repo",
+            },
+        ],
     },{
         timestamps: true
     }

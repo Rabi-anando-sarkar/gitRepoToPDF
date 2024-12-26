@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { getPdf, uploadPdf } from "../controllers/repo.controllers.js";
+import { convertToPdf, listAll, saveInDB } from "../controllers/repo.controllers.js";
+import authenticateToken from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
-router.route('/repoGen').post(getPdf)
-router.route('/repoCloud').post(uploadPdf)
+router.route('/convertToPdf').post(authenticateToken,convertToPdf)
+router.route('/saveInDB/:repoId').post(authenticateToken,saveInDB)
+router.route('/listRepos').get(authenticateToken,listAll)
 
 export default router

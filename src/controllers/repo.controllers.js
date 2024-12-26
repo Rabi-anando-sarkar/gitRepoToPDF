@@ -7,12 +7,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getFilesFromGithub } from '../utils/getFiles.js'
 import { uploadOnCloudinary } from '../utils/Cloudinary.js'
+import { Repo } from '../models/repo.model.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 
-const getPdf = asyncHandler(async (req,res) => {
+const convertToPdf = asyncHandler(async (req,res) => {
     
     const { githubUrl } = req.body
 
@@ -35,6 +36,14 @@ const getPdf = asyncHandler(async (req,res) => {
     
     const owner = matchUrl[1];
     const repo = matchUrl[2];
+
+    const repoData = await Repo.create({
+        repoUrl: githubUrl,
+        repoMetaData: {
+            repoOwner: owner,
+            repoName: repo
+        }
+    })
 
     const fileContents = await getFilesFromGithub(owner,repo)
 
@@ -75,13 +84,25 @@ const getPdf = asyncHandler(async (req,res) => {
     return res.status(201).json(
         new ApiResponse(
             201,
+            {
+                'repository Database' : repoData,
+            },
             'Github Repository to Pdf has been generated!'
         )
     )
 })
 
-const uploadPdf = asyncHandler( async(req,res) => {
-    
+const saveInDB = asyncHandler( async(req,res) => {
+
+    const { repoId } = req.params
+
+    if(!repoId) {
+        throw new ApiError(
+            400,
+            "Repo Id is required"
+        )
+    }
+
     const localFolder = path.resolve('public/temp/')
 
     const response = await uploadOnCloudinary(localFolder)
@@ -93,16 +114,72 @@ const uploadPdf = asyncHandler( async(req,res) => {
         )
     }
 
+    const user = req.user
+
+    if(!user) {
+        throw new ApiError(
+            500,
+            'User not authenticated'
+        )
+    }
+
+    const updateRepoDB = await Repo.findByIdAndUpdate(
+        repoId,
+        {
+            pdfUrl: response.secure_url,
+            $addToSet: {
+                users: user._id
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    if(!updateRepoDB) {
+        throw new ApiError(
+            404,
+            'Repo not Found'
+        )
+    }
+
     return res.status(201).json(
         new ApiResponse(
             201,
-            response,
+            {
+                pdfUrl: updateRepoDB.pdfUrl,
+                user: updateRepoDB.users
+            },
             'File Uploaded to cloudinary succesfully'
         )
     )
 })
 
+const listAll = asyncHandler( async(req,res) => {
+    const repos = await Repo.find()
+
+    if(!repos) {
+        throw new ApiError(
+            500,
+            'No Repos Found'
+        )
+    }
+
+    return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    {
+                        "repo details" : repos
+                    },
+                    "all repos fetched"
+                )
+            )
+})
+
 export {
-    getPdf,
-    uploadPdf
+    convertToPdf,
+    saveInDB,
+    listAll
 }
